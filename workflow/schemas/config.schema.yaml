@@ -244,6 +244,36 @@ properties:
     required: [class, lengths]
     additionalProperties: false
 
+  resources:
+    type: object
+    properties:
+      base_url:
+        type: string
+        minLength: 1
+        description: >
+          Base URL (e.g. an Alibaba Cloud OSS bucket endpoint) from which all
+          workflow resources are fetched instead of their original public
+          sources.  When unset or empty, each download rule falls back to the
+          hard-coded public URL defined in the rule.
+          The file layout under base_url must mirror the local resources/
+          tree — for example, with ``base_url: "https://example.oss-cn-hangzhou.aliyuncs.com/prefix"``:
+            * ``{base_url}/refs/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz``
+              (corresponds to ``resources/refs/genome.fasta`` after gzip decompression)
+            * ``{base_url}/vqsr/hapmap_3.3.hg38.vcf.gz``
+              (corresponds to ``resources/vqsr/hapmap_3.3.hg38.vcf.gz``)
+          NOTE: build the mirror with ``misc/scripts/pre_download_resources.sh``,
+          which reads ``reference.release`` and uploads one complete snapshot per
+          release under a release-scoped prefix — e.g. ``--dest
+          <remote>:<bucket>/ScanNeo2/resources/r111`` paired with ``base_url:
+          "https://<bucket>.<endpoint>/ScanNeo2/resources/r111"``.  Keep that
+          ``r<release>`` segment: the Ensembl proteome and the two Ensembl VEP
+          plugins change with the release but carry no release in their name, so a
+          flat prefix would quietly serve a stale copy after a ``reference.release``
+          bump.  One prefix per release also lets the next release be staged and
+          verified (``--check``) while the live one keeps serving.  Re-run the
+          script on every ``reference.release`` change, then flip ``base_url``.
+    additionalProperties: false
+
 required:
   - reference
   - threads

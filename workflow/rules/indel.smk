@@ -206,13 +206,20 @@ rule download_gnomad_germline:
         "logs/download/gnomad_germline.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading af-only-gnomAD germline resource (GATK somatic-hg38) for Mutect2"
     shell:
         """
+        if [ -n "{params.base_url}" ]; then
+          _b="{params.base_url}/somatic"
+        else
+          _b="https://storage.googleapis.com/gatk-best-practices/somatic-hg38"
+        fi
         (
-            curl --fail -L https://storage.googleapis.com/gatk-best-practices/somatic-hg38/af-only-gnomad.hg38.vcf.gz -o {output.vcf}
-            curl --fail -L https://storage.googleapis.com/gatk-best-practices/somatic-hg38/af-only-gnomad.hg38.vcf.gz.tbi -o {output.tbi}
+            curl --fail -L --retry 5 --retry-all-errors "$_b/af-only-gnomad.hg38.vcf.gz" -o {output.vcf}
+            curl --fail -L --retry 5 --retry-all-errors "$_b/af-only-gnomad.hg38.vcf.gz.tbi" -o {output.tbi}
         ) >{log} 2>&1
         """
 

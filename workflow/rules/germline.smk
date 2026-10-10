@@ -27,21 +27,42 @@ rule get_gatk_vqsr_training_sets:
         "logs/download/gatk_vqsr_training_sets.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading training sets for calling high confidence variants"
     shell:
         """
+        if [ -n "{params.base_url}" ]; then
+          _b="{params.base_url}/vqsr"
+        else
+          _gcs="https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0"
+          _ncbi="https://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b150_GRCh38p7/VCF/GATK"
+        fi
         (
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/hapmap_3.3.hg38.vcf.gz -o resources/vqsr/hapmap_3.3.hg38.vcf.gz
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/hapmap_3.3.hg38.vcf.gz.tbi -o resources/vqsr/hapmap_3.3.hg38.vcf.gz.tbi
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/1000G_omni2.5.hg38.vcf.gz -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/1000G_omni2.5.hg38.vcf.gz.tbi -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz.tbi
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi
-            curl --fail -L https://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b150_GRCh38p7/VCF/GATK/00-common_all.vcf.gz -o resources/vqsr/dbSNP_b150.vcf.gz
-            curl --fail -L https://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b150_GRCh38p7/VCF/GATK/00-common_all.vcf.gz.tbi -o resources/vqsr/dbSNP_b150.vcf.gz.tbi
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
-            curl --fail -L https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi
+            if [ -n "{params.base_url}" ]; then
+              curl --fail -L --retry 5 --retry-all-errors "$_b/hapmap_3.3.hg38.vcf.gz"           -o resources/vqsr/hapmap_3.3.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_b/hapmap_3.3.hg38.vcf.gz.tbi"       -o resources/vqsr/hapmap_3.3.hg38.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_omni2.5.hg38.vcf.gz"        -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_omni2.5.hg38.vcf.gz.tbi"    -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_phase1.snps.high_confidence.hg38.vcf.gz" -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi" -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_b/dbSNP_b150.vcf.gz"                -o resources/vqsr/dbSNP_b150.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_b/dbSNP_b150.vcf.gz.tbi"            -o resources/vqsr/dbSNP_b150.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_b/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz" -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_b/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi" -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi
+            else
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/hapmap_3.3.hg38.vcf.gz"           -o resources/vqsr/hapmap_3.3.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/hapmap_3.3.hg38.vcf.gz.tbi"       -o resources/vqsr/hapmap_3.3.hg38.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/1000G_omni2.5.hg38.vcf.gz"        -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/1000G_omni2.5.hg38.vcf.gz.tbi"    -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/1000G_phase1.snps.high_confidence.hg38.vcf.gz" -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi" -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_ncbi/00-common_all.vcf.gz"            -o resources/vqsr/dbSNP_b150.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_ncbi/00-common_all.vcf.gz.tbi"        -o resources/vqsr/dbSNP_b150.vcf.gz.tbi
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz" -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
+              curl --fail -L --retry 5 --retry-all-errors "$_gcs/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi" -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi
+            fi
         ) >{log} 2>&1
         """
 

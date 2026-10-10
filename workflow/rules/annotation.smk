@@ -7,15 +7,23 @@ rule download_vep_plugins:
         "../envs/basic.yml"
     params:
         release=f"""{config['reference']['release']}""",
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading VEP plugins"
     shell:
         """
         (
             mkdir -p resources/vep/plugins/
-            curl --fail -L -o {output}/NMD.pm https://raw.githubusercontent.com/Ensembl/VEP_plugins/release/{params.release}/NMD.pm
-            curl --fail -L -o {output}/Downstream.pm https://raw.githubusercontent.com/Ensembl/VEP_plugins/release/{params.release}/Downstream.pm
-            curl --fail -L -o {output}/Wildtype.pm https://raw.githubusercontent.com/griffithlab/pVAC-Seq/master/pvacseq/VEP_plugins/Wildtype.pm
+            if [ -n "{params.base_url}" ]; then
+              _b="{params.base_url}/vep/plugins"
+              curl --fail -L --retry 5 --retry-all-errors -o {output}/NMD.pm     "$_b/NMD.pm"
+              curl --fail -L --retry 5 --retry-all-errors -o {output}/Downstream.pm "$_b/Downstream.pm"
+              curl --fail -L --retry 5 --retry-all-errors -o {output}/Wildtype.pm "$_b/Wildtype.pm"
+            else
+              curl --fail -L --retry 5 --retry-all-errors -o {output}/NMD.pm     https://raw.githubusercontent.com/Ensembl/VEP_plugins/release/{params.release}/NMD.pm
+              curl --fail -L --retry 5 --retry-all-errors -o {output}/Downstream.pm https://raw.githubusercontent.com/Ensembl/VEP_plugins/release/{params.release}/Downstream.pm
+              curl --fail -L --retry 5 --retry-all-errors -o {output}/Wildtype.pm https://raw.githubusercontent.com/griffithlab/pVAC-Seq/master/pvacseq/VEP_plugins/Wildtype.pm
+            fi
         ) >{log} 2>&1
         """
 
@@ -29,18 +37,24 @@ rule download_vep_cache:
         "../envs/basic.yml"
     params:
         release=f"""{config['reference']['release']}""",
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading VEP cache"
     shell:
         """
         (
             mkdir -p {output}
+            if [ -n "{params.base_url}" ]; then
+              _u="{params.base_url}/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz"
+            else
+              _u="https://ftp.ensembl.org/pub/release-{params.release}/variation/indexed_vep_cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz"
+            fi
             curl --fail -L -C - \
                 --retry 10 \
                 --retry-delay 10 \
                 --retry-all-errors \
                 -o resources/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz \
-                https://ftp.ensembl.org/pub/release-{params.release}/variation/indexed_vep_cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz
+                "$_u"
 
             tar -xzf resources/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz -C resources/vep/cache/
             rm resources/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz

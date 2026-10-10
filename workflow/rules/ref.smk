@@ -9,16 +9,26 @@ rule get_genome:
         "../envs/basic.yml"
     params:
         release=f"""{config['reference']['release']}""",
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Download reference genome and annotation"
     shell:
         """
         exec >{log} 2>&1
-        curl --fail -L -o {output.genome}.gz https://ftp.ensembl.org/pub/release-{params.release}/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz
+        if [ -n "{params.base_url}" ]; then
+          _g="{params.base_url}/refs/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz"
+          _a="{params.base_url}/refs/Homo_sapiens.GRCh38.{params.release}.gtf.gz"
+          _p="{params.base_url}/refs/Homo_sapiens.GRCh38.pep.all.fa.gz"
+        else
+          _g="https://ftp.ensembl.org/pub/release-{params.release}/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz"
+          _a="https://ftp.ensembl.org/pub/release-{params.release}/gtf/homo_sapiens/Homo_sapiens.GRCh38.{params.release}.gtf.gz"
+          _p="https://ftp.ensembl.org/pub/release-{params.release}/fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz"
+        fi
+        curl --fail -L --retry 5 --retry-all-errors -o {output.genome}.gz "$_g"
         gzip -d {output.genome}.gz
-        curl --fail -L -o {output.annotation}.gz https://ftp.ensembl.org/pub/release-{params.release}/gtf/homo_sapiens/Homo_sapiens.GRCh38.{params.release}.gtf.gz
+        curl --fail -L --retry 5 --retry-all-errors -o {output.annotation}.gz "$_a"
         gzip -d {output.annotation}.gz
-        curl --fail -L -o {output.peptide}.gz https://ftp.ensembl.org/pub/release-{params.release}/fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz
+        curl --fail -L --retry 5 --retry-all-errors -o {output.peptide}.gz "$_p"
         gzip -d {output.peptide}.gz
         """
 
@@ -106,6 +116,8 @@ rule download_rediportal:
         "logs/ref/download_rediportal.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading and tabix-indexing the REDIportal A-to-I RNA editing atlas (GRCh38)"
     shell:
@@ -114,9 +126,13 @@ rule download_rediportal:
         # line. The atlas is human GRCh38 only; downloaded on demand by the RNA
         # somatic SNV editing de-noising path (any run that calls RNA SNVs).
         """
+        if [ -n "{params.base_url}" ]; then
+          _u="{params.base_url}/rediportal/TABLE1_hg38_v3.txt.gz"
+        else
+          _u="https://rediportal.cloud.ba.infn.it/download/TABLE1_hg38_v3.txt.gz"
+        fi
         (
-            curl --fail -L --retry 5 -o {output.table} \
-                https://rediportal.cloud.ba.infn.it/download/TABLE1_hg38_v3.txt.gz
+            curl --fail -L --retry 5 -o {output.table} "$_u"
             tabix -S 1 -s 2 -b 3 -e 3 {output.table}
         ) >{log} 2>&1
         """
@@ -175,11 +191,18 @@ rule get_hla_info:
         "logs/ref/get_hla_info.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Download full resolution HLA information"
     shell:
         """
-        curl --fail -L -o {output} https://ftp.ebi.ac.uk/pub/databases/ipd/imgt/hla/hla_gen.fasta >{log} 2>&1
+        if [ -n "{params.base_url}" ]; then
+          _u="{params.base_url}/hla/hla_gen.fasta"
+        else
+          _u="https://ftp.ebi.ac.uk/pub/databases/ipd/imgt/hla/hla_gen.fasta"
+        fi
+        curl --fail -L --retry 5 --retry-all-errors -o {output} "$_u" >{log} 2>&1
         """
 
 

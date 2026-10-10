@@ -17,12 +17,18 @@ rule download_mhcI_ba_tools:
         "logs/download/mhcI_ba_tools.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading MHC I prediction tools"
     shell:
         """
-        (curl --fail -L -o - https://downloads.iedb.org/tools/mhci/3.1.4/IEDB_MHC_I-3.1.4.tar.gz \
-            | tar xz -C workflow/scripts/) >{log} 2>&1
+        if [ -n "{params.base_url}" ]; then
+          _u="{params.base_url}/tools/IEDB_MHC_I-3.1.4.tar.gz"
+        else
+          _u="https://downloads.iedb.org/tools/mhci/3.1.4/IEDB_MHC_I-3.1.4.tar.gz"
+        fi
+        (curl --fail -L --retry 5 --retry-all-errors -o - "$_u" | tar xz -C workflow/scripts/) >{log} 2>&1
         """
 
 
@@ -33,13 +39,19 @@ rule download_mhcII_ba_tools:
         "logs/download/mhcII_ba_tools.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading MHC II prediction tools"
     shell:
         """
+        if [ -n "{params.base_url}" ]; then
+          _u="{params.base_url}/tools/IEDB_MHC_II-3.1.12.tar.gz"
+        else
+          _u="https://downloads.iedb.org/tools/mhcii/3.1.12/IEDB_MHC_II-3.1.12.tar.gz"
+        fi
         (
-            curl --fail -L -o - https://downloads.iedb.org/tools/mhcii/3.1.12/IEDB_MHC_II-3.1.12.tar.gz \
-                | tar xz -C workflow/scripts/
+            curl --fail -L -o - "$_u" | tar xz -C workflow/scripts/
             cp misc/mhc_ii/methods/netmhciipan-3.2-executable/netmhciipan_3_2_executable/netmhciipan_python_interface.py \
                 workflow/scripts/mhc_ii/methods/netmhciipan-3.2-executable/netmhciipan_3_2_executable/
             cp misc/mhc_ii/methods/netmhciipan-4.1-executable/netmhciipan_4_1_executable/netmhciipan_python_interface.py \
@@ -59,12 +71,18 @@ rule download_prediction_binding_affinity_tools:
         "logs/download/immunogenicity_tools.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading immunogenicity prediction tools"
     shell:
         """
-        (curl --fail -L -o - https://downloads.iedb.org/tools/immunogenicity/3.0/IEDB_Immunogenicity-3.0.tar.gz \
-            | tar xz -C workflow/scripts/) >{log} 2>&1
+        if [ -n "{params.base_url}" ]; then
+          _u="{params.base_url}/tools/IEDB_Immunogenicity-3.0.tar.gz"
+        else
+          _u="https://downloads.iedb.org/tools/immunogenicity/3.0/IEDB_Immunogenicity-3.0.tar.gz"
+        fi
+        (curl --fail -L --retry 5 --retry-all-errors -o - "$_u" | tar xz -C workflow/scripts/) >{log} 2>&1
         """
 
 

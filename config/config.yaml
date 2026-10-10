@@ -14,6 +14,32 @@ samples: config/samples.tsv   # path to the sample sheet (long format); one row 
                               # custom_variants, custom_proteins, custom_hla_I,
                               # custom_hla_II. See docs/configuration.md.
 
+# resources:                   # optional: fetch every resource from a mirror (e.g.
+#   base_url: ""               # Alibaba Cloud OSS) instead of the original public
+                              # sources. When set, each download rule fetches
+                              # {base_url}/<path> instead of its hard-coded URL, so the
+                              # mirror must hold exactly the archives the rules ask for
+                              # — the local resources/ layout, but under the downloaded
+                              # file names, not the decompressed outputs, e.g.
+                              # {base_url}/refs/Homo_sapiens.GRCh38.111.gtf.gz and
+                              # {base_url}/vqsr/hapmap_3.3.hg38.vcf.gz.
+                              #
+                              # Build it with misc/scripts/pre_download_resources.sh,
+                              # which reads reference.release above and writes one
+                              # complete snapshot per release:
+                              #   --dest   myoss:<bucket>/ScanNeo2/resources/r111
+                              #   base_url: https://<bucket>.<endpoint>/ScanNeo2/resources/r111
+                              #
+                              # Keep the r<release> segment. The Ensembl proteome
+                              # (refs/Homo_sapiens.GRCh38.pep.all.fa.gz) and the two
+                              # Ensembl VEP plugins change with the release but carry no
+                              # release in their name, so a flat prefix would quietly
+                              # serve a stale copy after a reference.release bump. One
+                              # prefix per release also lets the next release be staged
+                              # and verified (`--check`) while the live one keeps
+                              # serving; re-run the script on every reference.release
+                              # change, then flip base_url.
+
 ### pre-processing (only applied on fastq reads)
 preproc: 
   activate: true  # whether (=true) or not (=false) to include pre-processing

@@ -7,13 +7,21 @@ rule get_mhcI_hla_panel:
         "logs/ref/get_mhcI_hla_panel.log",
     conda:
         "../envs/basic.yml"
+    params:
+        base_url=lambda w: config.get("resources", {}).get("base_url", "").rstrip("/"),
     message:
         "Downloading MHC-I HLA reference panels"
     shell:
         """
         (
-            curl --fail -o {output.dna} https://raw.githubusercontent.com/FRED-2/OptiType/v1.3.5/data/hla_reference_dna.fasta
-            curl --fail -o {output.rna} https://raw.githubusercontent.com/FRED-2/OptiType/v1.3.5/data/hla_reference_rna.fasta
+            if [ -n "{params.base_url}" ]; then
+              _b="{params.base_url}/hla"
+              curl --fail -L --retry 5 --retry-all-errors -o {output.dna} "$_b/hla_reference_dna.fasta"
+              curl --fail -L --retry 5 --retry-all-errors -o {output.rna} "$_b/hla_reference_rna.fasta"
+            else
+              curl --fail -L --retry 5 --retry-all-errors -o {output.dna} https://raw.githubusercontent.com/FRED-2/OptiType/v1.3.5/data/hla_reference_dna.fasta
+              curl --fail -L --retry 5 --retry-all-errors -o {output.rna} https://raw.githubusercontent.com/FRED-2/OptiType/v1.3.5/data/hla_reference_rna.fasta
+            fi
         ) >{log} 2>&1
         """
 
