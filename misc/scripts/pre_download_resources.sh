@@ -37,6 +37,14 @@ UPLOAD_CONCURRENCY=16
 RETRIES=3
 FORCE=0
 MODE="download"
+# 源站要求的 User-Agent。rclone 默认的 "rclone/vX.Y.Z" 会被 NCBI 拦下：它返回
+# HTTP 200，但正文是 "WWW Error Blocked Diagnostic" 的 HTML，rclone 会当成成功
+# 落盘（实测只有 3879 字节）。必须显式给一个能标识来源的 UA。
+USER_AGENT="ScanNeo2 resource mirror (https://github.com/ylab-hi/ScanNeo2)"
+# 对多线程（并发 Range 请求）不友好的源站，用逗号分隔；命中的改用单流。
+# NCBI 实测：单个 Range 请求正常返回 206，但 16 路并发时多线程下载在"打开源"这一步
+# 就拿到 503 Service Unavailable（--multi-thread-streams 0 即单流，可正常下载）。
+SINGLE_STREAM_HOSTS="ftp.ncbi.nlm.nih.gov"
 
 TAB=$'\t'
 
@@ -270,18 +278,27 @@ human_size() {
 
 # 流式转储：源走匿名 :http: 远端，多线程分片直接写成 OSS 对象，不落本地磁盘。
 # 注意多线程分片上传后 OSS 对象的 ETag 不再是 MD5，所以只按大小校验。
+# 内存占用 ≈ 下载线程数 × --buffer-size + 上传并发 × --s3-chunk-size（多线程下载的
+# 缓冲区按 stream 分配），默认约 16×16M + 16×15M ≈ 0.5G，小内存机器上要按此下调。
 transfer() {
     local url="$1" rel="$2"
     local proto="${url%%://*}"
     local rest="${url#*://}"
     local origin="${proto}://${rest%%/*}"
     local path="${rest#*/}"
+    local streams="$STREAMS"
+
+    # 命中 SINGLE_STREAM_HOSTS 的源站退回单流（0 = 关闭多线程下载）
+    case ",${SINGLE_STREAM_HOSTS}," in
+    *",${origin#*://},"*) streams=0 ;;
+    esac
 
     rclone copyto ":http:${path}" "${DEST}/${rel}" \
         --http-url "$origin" \
-        --multi-thread-streams "$STREAMS" \
+        --user-agent "$USER_AGENT" \
+        --multi-thread-streams "$streams" \
         --multi-thread-cutoff 64M \
-        --buffer-size 64M \
+        --buffer-size 16M \
         --s3-chunk-size "$CHUNK_SIZE" \
         --s3-upload-concurrency "$UPLOAD_CONCURRENCY" \
         --timeout 5m \
@@ -291,6 +308,7 @@ transfer() {
         --stats 30s \
         --stats-one-line \
         --log-file "$RCLONE_LOG" \
+        --log-level INFO \
         $PROGRESS_FLAG
 }
 
@@ -424,8 +442,9 @@ fi
 if [[ "$MODE" == "check" ]]; then
     say "🏁 核对完成: 正常 ${ok} / 异常 ${failed}"
 else
-    # 写一份镜像清单到目标根目录，便于审计与后续核对
-    if [[ "${#rows[@]}" -gt 0 ]]; then
+    # 写一份镜像清单到目标根目录，便于审计与后续核对。只在整库运行时写：
+    # rows 只含本次运行处理过的条目，带 --only 的局部运行会把它覆盖成残缺清单。
+    if [[ -z "$ONLY" && "${#rows[@]}" -gt 0 ]]; then
         manifest_out="$(mktemp)"
         {
             printf '# ScanNeo2 resource mirror\n'
