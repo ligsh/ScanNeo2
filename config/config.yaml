@@ -36,9 +36,17 @@ samples: config/samples.tsv   # path to the sample sheet (long format); one row 
                               # release in their name, so a flat prefix would quietly
                               # serve a stale copy after a reference.release bump. One
                               # prefix per release also lets the next release be staged
-                              # and verified (`--check`) while the live one keeps
-                              # serving; re-run the script on every reference.release
-                              # change, then flip base_url.
+                              # and verified (`--check`) while the live one keeps serving;
+                              # re-run the script on every reference.release change, then
+                              # flip base_url.
+                              #
+                              # A mirror that is not publicly readable needs credentials:
+                              # export OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET and the
+                              # download rules sign their requests with SigV4 via
+                              # workflow/scripts/fetch_resource.sh (region parsed from the
+                              # endpoint host name, overridable with OSS_REGION). With
+                              # neither variable set they fetch with plain HTTP, so a
+                              # public mirror is unaffected.
 
 ### pre-processing (only applied on fastq reads)
 preproc: 

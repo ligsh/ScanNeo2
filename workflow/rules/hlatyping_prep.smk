@@ -16,8 +16,8 @@ rule get_mhcI_hla_panel:
         (
             if [ -n "{params.base_url}" ]; then
               _b="{params.base_url}/hla"
-              curl --fail -L --retry 5 --retry-all-errors -o {output.dna} "$_b/hla_reference_dna.fasta"
-              curl --fail -L --retry 5 --retry-all-errors -o {output.rna} "$_b/hla_reference_rna.fasta"
+              bash workflow/scripts/fetch_resource.sh "$_b/hla_reference_dna.fasta" {output.dna}
+              bash workflow/scripts/fetch_resource.sh "$_b/hla_reference_rna.fasta" {output.rna}
             else
               curl --fail -L --retry 5 --retry-all-errors -o {output.dna} https://raw.githubusercontent.com/FRED-2/OptiType/v1.3.5/data/hla_reference_dna.fasta
               curl --fail -L --retry 5 --retry-all-errors -o {output.rna} https://raw.githubusercontent.com/FRED-2/OptiType/v1.3.5/data/hla_reference_rna.fasta

@@ -16,9 +16,9 @@ rule download_vep_plugins:
             mkdir -p resources/vep/plugins/
             if [ -n "{params.base_url}" ]; then
               _b="{params.base_url}/vep/plugins"
-              curl --fail -L --retry 5 --retry-all-errors -o {output}/NMD.pm     "$_b/NMD.pm"
-              curl --fail -L --retry 5 --retry-all-errors -o {output}/Downstream.pm "$_b/Downstream.pm"
-              curl --fail -L --retry 5 --retry-all-errors -o {output}/Wildtype.pm "$_b/Wildtype.pm"
+              bash workflow/scripts/fetch_resource.sh "$_b/NMD.pm"     {output}/NMD.pm
+              bash workflow/scripts/fetch_resource.sh "$_b/Downstream.pm" {output}/Downstream.pm
+              bash workflow/scripts/fetch_resource.sh "$_b/Wildtype.pm"   {output}/Wildtype.pm
             else
               curl --fail -L --retry 5 --retry-all-errors -o {output}/NMD.pm     https://raw.githubusercontent.com/Ensembl/VEP_plugins/release/{params.release}/NMD.pm
               curl --fail -L --retry 5 --retry-all-errors -o {output}/Downstream.pm https://raw.githubusercontent.com/Ensembl/VEP_plugins/release/{params.release}/Downstream.pm
@@ -49,12 +49,9 @@ rule download_vep_cache:
             else
               _u="https://ftp.ensembl.org/pub/release-{params.release}/variation/indexed_vep_cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz"
             fi
-            curl --fail -L -C - \
-                --retry 10 \
-                --retry-delay 10 \
-                --retry-all-errors \
-                -o resources/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz \
-                "$_u"
+            bash workflow/scripts/fetch_resource.sh \
+                "$_u" \
+                resources/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz
 
             tar -xzf resources/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz -C resources/vep/cache/
             rm resources/vep/cache/homo_sapiens_vep_{params.release}_GRCh38.tar.gz

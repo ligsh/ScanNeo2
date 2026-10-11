@@ -24,11 +24,11 @@ rule get_genome:
           _a="https://ftp.ensembl.org/pub/release-{params.release}/gtf/homo_sapiens/Homo_sapiens.GRCh38.{params.release}.gtf.gz"
           _p="https://ftp.ensembl.org/pub/release-{params.release}/fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz"
         fi
-        curl --fail -L --retry 5 --retry-all-errors -o {output.genome}.gz "$_g"
+        bash workflow/scripts/fetch_resource.sh "$_g" {output.genome}.gz
         gzip -d {output.genome}.gz
-        curl --fail -L --retry 5 --retry-all-errors -o {output.annotation}.gz "$_a"
+        bash workflow/scripts/fetch_resource.sh "$_a" {output.annotation}.gz
         gzip -d {output.annotation}.gz
-        curl --fail -L --retry 5 --retry-all-errors -o {output.peptide}.gz "$_p"
+        bash workflow/scripts/fetch_resource.sh "$_p" {output.peptide}.gz
         gzip -d {output.peptide}.gz
         """
 
@@ -132,7 +132,7 @@ rule download_rediportal:
           _u="https://rediportal.cloud.ba.infn.it/download/TABLE1_hg38_v3.txt.gz"
         fi
         (
-            curl --fail -L --retry 5 -o {output.table} "$_u"
+            bash workflow/scripts/fetch_resource.sh "$_u" {output.table}
             tabix -S 1 -s 2 -b 3 -e 3 {output.table}
         ) >{log} 2>&1
         """
@@ -202,7 +202,7 @@ rule get_hla_info:
         else
           _u="https://ftp.ebi.ac.uk/pub/databases/ipd/imgt/hla/hla_gen.fasta"
         fi
-        curl --fail -L --retry 5 --retry-all-errors -o {output} "$_u" >{log} 2>&1
+        bash workflow/scripts/fetch_resource.sh "$_u" {output} >{log} 2>&1
         """
 
 

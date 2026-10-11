@@ -41,16 +41,16 @@ rule get_gatk_vqsr_training_sets:
         fi
         (
             if [ -n "{params.base_url}" ]; then
-              curl --fail -L --retry 5 --retry-all-errors "$_b/hapmap_3.3.hg38.vcf.gz"           -o resources/vqsr/hapmap_3.3.hg38.vcf.gz
-              curl --fail -L --retry 5 --retry-all-errors "$_b/hapmap_3.3.hg38.vcf.gz.tbi"       -o resources/vqsr/hapmap_3.3.hg38.vcf.gz.tbi
-              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_omni2.5.hg38.vcf.gz"        -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz
-              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_omni2.5.hg38.vcf.gz.tbi"    -o resources/vqsr/1000G_omni2.5.hg38.vcf.gz.tbi
-              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_phase1.snps.high_confidence.hg38.vcf.gz" -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz
-              curl --fail -L --retry 5 --retry-all-errors "$_b/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi" -o resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi
-              curl --fail -L --retry 5 --retry-all-errors "$_b/dbSNP_b150.vcf.gz"                -o resources/vqsr/dbSNP_b150.vcf.gz
-              curl --fail -L --retry 5 --retry-all-errors "$_b/dbSNP_b150.vcf.gz.tbi"            -o resources/vqsr/dbSNP_b150.vcf.gz.tbi
-              curl --fail -L --retry 5 --retry-all-errors "$_b/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz" -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
-              curl --fail -L --retry 5 --retry-all-errors "$_b/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi" -o resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi
+              bash workflow/scripts/fetch_resource.sh "$_b/hapmap_3.3.hg38.vcf.gz"           resources/vqsr/hapmap_3.3.hg38.vcf.gz
+              bash workflow/scripts/fetch_resource.sh "$_b/hapmap_3.3.hg38.vcf.gz.tbi"       resources/vqsr/hapmap_3.3.hg38.vcf.gz.tbi
+              bash workflow/scripts/fetch_resource.sh "$_b/1000G_omni2.5.hg38.vcf.gz"        resources/vqsr/1000G_omni2.5.hg38.vcf.gz
+              bash workflow/scripts/fetch_resource.sh "$_b/1000G_omni2.5.hg38.vcf.gz.tbi"    resources/vqsr/1000G_omni2.5.hg38.vcf.gz.tbi
+              bash workflow/scripts/fetch_resource.sh "$_b/1000G_phase1.snps.high_confidence.hg38.vcf.gz" resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz
+              bash workflow/scripts/fetch_resource.sh "$_b/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi" resources/vqsr/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi
+              bash workflow/scripts/fetch_resource.sh "$_b/dbSNP_b150.vcf.gz"                resources/vqsr/dbSNP_b150.vcf.gz
+              bash workflow/scripts/fetch_resource.sh "$_b/dbSNP_b150.vcf.gz.tbi"            resources/vqsr/dbSNP_b150.vcf.gz.tbi
+              bash workflow/scripts/fetch_resource.sh "$_b/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz" resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
+              bash workflow/scripts/fetch_resource.sh "$_b/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi" resources/vqsr/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz.tbi
             else
               curl --fail -L --retry 5 --retry-all-errors "$_gcs/hapmap_3.3.hg38.vcf.gz"           -o resources/vqsr/hapmap_3.3.hg38.vcf.gz
               curl --fail -L --retry 5 --retry-all-errors "$_gcs/hapmap_3.3.hg38.vcf.gz.tbi"       -o resources/vqsr/hapmap_3.3.hg38.vcf.gz.tbi

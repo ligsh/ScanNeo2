@@ -218,8 +218,8 @@ rule download_gnomad_germline:
           _b="https://storage.googleapis.com/gatk-best-practices/somatic-hg38"
         fi
         (
-            curl --fail -L --retry 5 --retry-all-errors "$_b/af-only-gnomad.hg38.vcf.gz" -o {output.vcf}
-            curl --fail -L --retry 5 --retry-all-errors "$_b/af-only-gnomad.hg38.vcf.gz.tbi" -o {output.tbi}
+            bash workflow/scripts/fetch_resource.sh "$_b/af-only-gnomad.hg38.vcf.gz" {output.vcf}
+            bash workflow/scripts/fetch_resource.sh "$_b/af-only-gnomad.hg38.vcf.gz.tbi" {output.tbi}
         ) >{log} 2>&1
         """
 
