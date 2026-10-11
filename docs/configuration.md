@@ -222,6 +222,18 @@ prioritization:
 
 `lengths.MHC-I` / `lengths.MHC-II` set the epitope k-mer lengths submitted to the binding predictor (netMHCpan / netMHCIIpan), one prediction job per `(allele, length, wt|mt)` cell. The default ranges (`8,9,10,11` for class I, `13,14,15` for class II) cover the dominant binding-affinity windows for each class. Both discrete lists (`8,9,10,11`) and ranges (`8-11`) are accepted.
 
+## RESOURCES
+
+默认情况下，每条下载规则都从原始公开源取文件（Ensembl、GATK 资源包、NCBI、IEDB、IPD-IMGT/HLA）。设置 `resources.base_url` 可把所有下载规则重定向到一个镜像——对象存储或任意 HTTP 服务器——当公开源在工作流所在机器上很慢或不可达时就需要它：
+
+```yaml
+resources:
+  base_url: https://example.oss-cn-beijing.aliyuncs.com/ScanNeo2/resources/r111
+```
+
+镜像必须按相同的相对路径存放规则所需的归档文件——`{base_url}/refs/Homo_sapiens.GRCh38.111.gtf.gz`、`{base_url}/vqsr/hapmap_3.3.hg38.vcf.gz` 等等。**强烈建议前缀带上 Ensembl release**。如何用 `misc/scripts/pre_download_resources.sh` 建镜像、哪些文件必须与之保持一致、以及非公共可读的镜像如何提供，见[资源镜像](mirror.md)。
+
+
 ## CLUSTER EXECUTION (SLURM)
 
 By default `snakemake --cores all --sdm conda` runs every job locally, in one machine or one interactive allocation. To distribute jobs across a SLURM cluster, ScanNeo2 ships a generic profile at `workflow/profiles/slurm/` (it needs the `snakemake-executor-plugin-slurm`, already in `environment.yml`):

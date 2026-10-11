@@ -34,6 +34,7 @@ nav:
   - Troubleshooting: troubleshooting.md
   - Developer: developer.md
   - Resources: resources.md
+  - Resource mirror: mirror.md
 
 markdown_extensions:
   - admonition
