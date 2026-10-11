@@ -251,27 +251,23 @@ properties:
         type: string
         minLength: 1
         description: >
-          Base URL (e.g. an Alibaba Cloud OSS bucket endpoint) from which all
-          workflow resources are fetched instead of their original public
-          sources.  When unset or empty, each download rule falls back to the
-          hard-coded public URL defined in the rule.
-          The file layout under base_url must mirror the local resources/
-          tree — for example, with ``base_url: "https://example.oss-cn-hangzhou.aliyuncs.com/prefix"``:
+          所有工作流资源改从此 URL（例如阿里云 OSS 的桶 endpoint）获取，而不用它们
+          原始的公开源。未设置或为空时，每条下载规则回退到规则里硬编码的公开 URL。
+          base_url 下的文件布局必须与本地 resources/ 目录树对应，例如
+          ``base_url: "https://example.oss-cn-hangzhou.aliyuncs.com/prefix"``：
             * ``{base_url}/refs/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz``
-              (corresponds to ``resources/refs/genome.fasta`` after gzip decompression)
+              （对应 gzip 解压后的 ``resources/refs/genome.fasta``）
             * ``{base_url}/vqsr/hapmap_3.3.hg38.vcf.gz``
-              (corresponds to ``resources/vqsr/hapmap_3.3.hg38.vcf.gz``)
-          NOTE: build the mirror with ``misc/scripts/pre_download_resources.sh``,
-          which reads ``reference.release`` and uploads one complete snapshot per
-          release under a release-scoped prefix — e.g. ``--dest
-          <remote>:<bucket>/ScanNeo2/resources/r111`` paired with ``base_url:
-          "https://<bucket>.<endpoint>/ScanNeo2/resources/r111"``.  Keep that
-          ``r<release>`` segment: the Ensembl proteome and the two Ensembl VEP
-          plugins change with the release but carry no release in their name, so a
-          flat prefix would quietly serve a stale copy after a ``reference.release``
-          bump.  One prefix per release also lets the next release be staged and
-          verified (``--check``) while the live one keeps serving.  Re-run the
-          script on every ``reference.release`` change, then flip ``base_url``.
+              （对应 ``resources/vqsr/hapmap_3.3.hg38.vcf.gz``）
+          提示：用 ``misc/scripts/pre_download_resources.sh`` 建镜像，它读取
+          ``reference.release`` 并按 release 写一份完整快照，例如 ``--dest
+          <remote>:<bucket>/ScanNeo2/resources/r111`` 配合 ``base_url:
+          "https://<bucket>.<endpoint>/ScanNeo2/resources/r111"``。请保留那个
+          ``r<release>`` 段：Ensembl 蛋白质组和两个 Ensembl VEP 插件随 release 变化、
+          但文件名里不带 release，平铺前缀会在升 ``reference.release`` 后静默提供旧版。
+          按 release 分前缀还能让新版先建好并用 ``--check`` 验证、再切换 ``base_url``。
+          每次改 ``reference.release`` 都要重跑脚本，然后切换 ``base_url``。
+          详见 ``docs/mirror.md``。
     additionalProperties: false
 
 required:

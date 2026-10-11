@@ -14,39 +14,33 @@ samples: config/samples.tsv   # path to the sample sheet (long format); one row 
                               # custom_variants, custom_proteins, custom_hla_I,
                               # custom_hla_II. See docs/configuration.md.
 
-# resources:                   # optional: fetch every resource from a mirror (e.g.
-#   base_url: ""               # Alibaba Cloud OSS) instead of the original public
-                              # sources. When set, each download rule fetches
-                              # {base_url}/<path> instead of its hard-coded URL, so the
-                              # mirror must hold exactly the archives the rules ask for
-                              # — the local resources/ layout, but under the downloaded
-                              # file names, not the decompressed outputs, e.g.
-                              # {base_url}/refs/Homo_sapiens.GRCh38.111.gtf.gz and
-                              # {base_url}/vqsr/hapmap_3.3.hg38.vcf.gz.
+# resources:                   # 可选：把全部资源改从镜像获取（例如阿里云 OSS），
+#   base_url: ""               # 而不用原始公开源
+                              # 设置后每条下载规则改取 {base_url}/<path>，不再用规则里
+                              # 硬编码的公开 URL。因此镜像必须按相同相对路径存放规则
+                              # 需要的**归档文件本身**（不是解压后的产物），例如：
+                              #   {base_url}/refs/Homo_sapiens.GRCh38.111.gtf.gz
+                              #   {base_url}/vqsr/hapmap_3.3.hg38.vcf.gz
                               #
-                              # Build it with misc/scripts/pre_download_resources.sh,
-                              # which reads reference.release above and writes one
-                              # complete snapshot per release:
+                              # 用 misc/scripts/pre_download_resources.sh 建镜像：它读取
+                              # 上面的 reference.release，每个 release 写一份完整快照。
                               #   --dest   myoss:<bucket>/ScanNeo2/resources/r111
                               #   base_url: https://<bucket>.<endpoint>/ScanNeo2/resources/r111
                               #
-                              # Keep the r<release> segment. The Ensembl proteome
-                              # (refs/Homo_sapiens.GRCh38.pep.all.fa.gz) and the two
-                              # Ensembl VEP plugins change with the release but carry no
-                              # release in their name, so a flat prefix would quietly
-                              # serve a stale copy after a reference.release bump. One
-                              # prefix per release also lets the next release be staged
-                              # and verified (`--check`) while the live one keeps serving;
-                              # re-run the script on every reference.release change, then
-                              # flip base_url.
+                              # 请保留 r<release> 这一段。Ensembl 蛋白质组
+                              # （refs/Homo_sapiens.GRCh38.pep.all.fa.gz）和两个 Ensembl
+                              # VEP 插件随 release 变化、但文件名里不带 release：平铺前缀
+                              # 会在升 reference.release 后静默地继续提供旧版。按 release
+                              # 分前缀还能让新版先建好并用 --check 验证、再切换 base_url，
+                              # 期间旧版照常服务。每次改 reference.release 都要重跑脚本。
                               #
-                              # A mirror that is not publicly readable needs credentials:
-                              # export OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET and the
-                              # download rules sign their requests with SigV4 via
-                              # workflow/scripts/fetch_resource.sh (region parsed from the
-                              # endpoint host name, overridable with OSS_REGION). With
-                              # neither variable set they fetch with plain HTTP, so a
-                              # public mirror is unaffected.
+                              # 镜像若不可公共读取，需要凭据：导出 OSS_ACCESS_KEY_ID /
+                              # OSS_ACCESS_KEY_SECRET，下载规则会经
+                              # workflow/scripts/fetch_resource.sh 用 SigV4 签名（region
+                              # 从 endpoint 主机名解析，可用 OSS_REGION 覆盖）。两个变量
+                              # 都没设时走普通 HTTP，公共镜像不受影响。
+                              #
+                              # 详见 docs/mirror.md
 
 ### pre-processing (only applied on fastq reads)
 preproc: 
