@@ -818,20 +818,28 @@ def get_input_filtering_hlatyping_PE(wildcards):
 def get_all_mhcI_alleles(wildcards):
     values = []
 
+    # 只对肿瘤组做分型：normal 是对照，把它算进来会把该肿瘤已经丢失的等位基因
+    # 重新引入（get_predicted_mhcII_alleles 同样按名字排除 normal，这里保持一致）
+    def tumor_groups(seqtype):
+        normals = SAMPLES[wildcards.sample]["normal"] or []
+        return [
+            key for key in SAMPLES[wildcards.sample][seqtype].keys() if key not in normals
+        ]
+
     if "DNA" in config["hlatyping"]["MHC-I_mode"]:
         if len(SAMPLES[wildcards.sample]["dnaseq"]) != 0:
             if (
                 SAMPLES[wildcards.sample]["dnaseq_readtype"] == "SE"
                 or SAMPLES[wildcards.sample]["dnaseq_filetype"] == ".bam"
             ):
-                for key in SAMPLES[wildcards.sample]["dnaseq"].keys():
+                for key in tumor_groups("dnaseq"):
                     values += expand(
                         "results/{sample}/hla/mhc-I/genotyping/{group}_DNA_flt_SE.tsv",
                         sample=wildcards.sample,
                         group=key,
                     )
             elif SAMPLES[wildcards.sample]["dnaseq_readtype"] == "PE":
-                for key in SAMPLES[wildcards.sample]["dnaseq"].keys():
+                for key in tumor_groups("dnaseq"):
                     values += expand(
                         "results/{sample}/hla/mhc-I/genotyping/{group}_DNA_flt_PE.tsv",
                         sample=wildcards.sample,
@@ -844,14 +852,14 @@ def get_all_mhcI_alleles(wildcards):
                 SAMPLES[wildcards.sample]["rnaseq_readtype"] == "SE"
                 or SAMPLES[wildcards.sample]["rnaseq_filetype"] == ".bam"
             ):
-                for key in SAMPLES[wildcards.sample]["rnaseq"].keys():
+                for key in tumor_groups("rnaseq"):
                     values += expand(
                         "results/{sample}/hla/mhc-I/genotyping/{group}_RNA_flt_SE.tsv",
                         sample=wildcards.sample,
                         group=key,
                     )
             elif SAMPLES[wildcards.sample]["rnaseq_readtype"] == "PE":
-                for key in SAMPLES[wildcards.sample]["rnaseq"].keys():
+                for key in tumor_groups("rnaseq"):
                     values += expand(
                         "results/{sample}/hla/mhc-I/genotyping/{group}_RNA_flt_PE.tsv",
                         sample=wildcards.sample,
