@@ -27,6 +27,8 @@ rule preproc_single_end:
     log:
         "logs/{sample}/preproc/fastp_single_end_{seqtype}_{group}.log",
     threads: config["threads"]
+    benchmark:
+        "benchmarks/{sample}/preproc/fastp_single_end_{seqtype}_{group}.tsv",
     params:
         adapters="",
         extra="",
@@ -86,6 +88,8 @@ rule preproc_paired_end:
     log:
         "logs/{sample}/preproc/fastp_paired_end_{seqtype}_{group}.log",
     threads: config["threads"]
+    benchmark:
+        "benchmarks/{sample}/preproc/fastp_paired_end_{seqtype}_{group}.tsv",
     params:
         adapters="",
         extra=lambda wildcards: "-u 100 -e {0} -l {1} {2} ".format(

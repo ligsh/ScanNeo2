@@ -141,6 +141,8 @@ rule detect_variants_htc_first_round:
     log:
         "logs/{sample}/germline/detect_variants_htc_1rd_{seqtype}_{group}_{chr}.log",
     threads: 4
+    benchmark:
+        "benchmarks/{sample}/germline/detect_variants_htc_1rd_{seqtype}_{group}_{chr}.tsv",
     resources:
         mem_mb=1024,
     params:
@@ -384,6 +386,8 @@ rule detect_variants_htc_final_round:
     log:
         "logs/{sample}/germline/detect_variants_htc_final_{seqtype}_{group}_{chr}.log",
     threads: 4
+    benchmark:
+        "benchmarks/{sample}/germline/detect_variants_htc_final_{seqtype}_{group}_{chr}.tsv",
     resources:
         mem_mb=1024,
     message:

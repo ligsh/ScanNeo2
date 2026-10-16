@@ -138,6 +138,8 @@ rule prioritize_source:
         directory("results/{sample}/prioritization/{source}/"),
     log:
         "logs/{sample}/prioritization/{source}.log",
+    benchmark:
+        "benchmarks/{sample}/prioritization/{source}.tsv",
     wildcard_constraints:
         source="|".join(re.escape(s) for s in PRIORITIZATION_SOURCES),
     conda:

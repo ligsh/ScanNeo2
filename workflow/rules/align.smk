@@ -16,6 +16,8 @@ rule star_align_fastq:
     log:
         "logs/{sample}/align/star_align_fastq_{group}.log",
     threads: config["threads"]
+    benchmark:
+        "benchmarks/{sample}/align/star_align_fastq_{group}.tsv",
     params:
         extra=lambda wildcards: (
             "--outSAMtype BAM Unsorted "
@@ -98,6 +100,8 @@ rule star_align_bamfile:
     log:
         "logs/{sample}/align/star_align_bamfile_{group}_{rg}.log",
     threads: config["threads"]
+    benchmark:
+        "benchmarks/{sample}/align/star_align_bamfile_{group}_{rg}.tsv",
     params:
         extra=lambda wildcards: (
             "--outSAMtype BAM Unsorted --genomeSAindexNbases 10 "
@@ -230,6 +234,8 @@ rule realign:
         bam="results/{sample}/{seqtype}/align/{group}_final_BWA.bam",
     log:
         "logs/{sample}/align/realign_{seqtype}_{group}.log",
+    benchmark:
+        "benchmarks/{sample}/align/realign_{seqtype}_{group}.tsv",
     wildcard_constraints:
         seqtype="rnaseq",
     conda:
@@ -260,6 +266,8 @@ rule realign_dnaseq_bam:
         bam="results/{sample}/dnaseq/align/bam/{group}_final_BWA.bam",
     log:
         "logs/{sample}/align/realign_dnaseq_bam_{group}.log",
+    benchmark:
+        "benchmarks/{sample}/align/realign_dnaseq_bam_{group}.tsv",
     conda:
         "../envs/basic.yml"
     threads: config["threads"]
@@ -301,6 +309,8 @@ rule bwa_align_dnaseq:
         "results/{sample}/dnaseq/align/{group}_aligned_BWA.bam",
     log:
         "logs/{sample}/align/bwa_align_dnaseq_{group}.log",
+    benchmark:
+        "benchmarks/{sample}/align/bwa_align_dnaseq_{group}.tsv",
     conda:
         "../envs/basic.yml"
     threads: config["threads"]

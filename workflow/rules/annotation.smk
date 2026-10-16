@@ -93,6 +93,8 @@ rule annotate_variants:
     # the vep wrapper forwards threads to --fork; VEP --everything is slow and
     # scales well across forks (it was the critical-path tail of the TESLA run)
     threads: 16
+    benchmark:
+        "benchmarks/{sample}/annotation/annotate_variants_{vartype}.tsv",
     params:
         plugins=["NMD", "Wildtype", "Downstream"],
         extra="--everything",  # optional: extra arguments

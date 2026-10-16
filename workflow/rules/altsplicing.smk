@@ -6,6 +6,8 @@ rule spladder:
         directory("results/{sample}/rnaseq/altsplicing/spladder_run/{group}"),
     log:
         "logs/{sample}/altsplicing/spladder_{group}.log",
+    benchmark:
+        "benchmarks/{sample}/altsplicing/spladder_{group}.tsv",
     conda:
         "../envs/spladder.yml"
     threads: config["threads"]

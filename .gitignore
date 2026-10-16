@@ -16,3 +16,4 @@ __pycache__/
 # which a depth-agnostic pattern would silently ignore.
 /results/
 /logs/
+/benchmarks/

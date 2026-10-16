@@ -1,0 +1,25 @@
+# 代理开关，必须 source 使用：
+#   source /data/bin/proxy {on|off|status}
+#
+# 为什么不能全局打开：conda/apt 走的是 TUNA 国内镜像、OSS 走的是内网 endpoint，
+# 这些一旦被塞进美国代理会变得极慢，OSS 内网域名更是直接解析不到。所以开代理时
+# 同时用 no_proxy 把它们排除。
+case "${1:-}" in
+on)
+  export http_proxy=socks5h://127.0.0.1:1080
+  export https_proxy=socks5h://127.0.0.1:1080
+  export no_proxy=mirrors.tuna.tsinghua.edu.cn,mirrors.aliyun.com,aliyuncs.com,localhost,127.0.0.1,.internal
+  echo "代理已开（no_proxy 已排除国内镜像与 OSS 内网）"
+  ;;
+off)
+  unset http_proxy https_proxy no_proxy
+  echo "代理已关"
+  ;;
+status)
+  echo "http_proxy=${http_proxy:-（未设置，即直连）}"
+  ;;
+*)
+  echo "用法: source /data/bin/proxy {on|off|status}"
+  echo "注意：此脚本必须 source，不能直接执行（否则变量只存在于子进程里）"
+  ;;
+esac

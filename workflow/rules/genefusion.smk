@@ -9,6 +9,8 @@ rule arriba:
     log:
         "logs/{sample}/genefusion/arriba_{group}.log",
     threads: config["threads"]
+    benchmark:
+        "benchmarks/{sample}/genefusion/arriba_{group}.tsv",
     params:
         genome_build="GRCh38",
         # arriba's blacklist is its main artifact filter; without it arriba
