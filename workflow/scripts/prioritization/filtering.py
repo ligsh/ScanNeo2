@@ -112,8 +112,12 @@ class Immunogenicity:
 
 
 class SequenceSimilarity:
-    def __init__(self, output_dir, mhc_class, vartype):
+    def __init__(self, output_dir, mhc_class, vartype, threads=1):
         print(f"Calculating sequence similarity for {vartype} MHC-{mhc_class} neoepitopes")
+
+        # blastp 是按 query 批次切分线程的；这里的查询集是整列突变肽（十几万条短肽），
+        # 多线程能实打实地加速。默认 1 保持原有行为。
+        self.threads = max(1, int(threads))
         
         self.matrix = bl.BLOSUM("workflow/scripts/prioritization/BLOSUM62-2.txt")
         
@@ -233,7 +237,9 @@ class SequenceSimilarity:
                          '-out',
                          outfile.name,
                          '-outfmt',
-                         '6'],
+                         '6',
+                         '-num_threads',
+                         str(self.threads)],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         universal_newlines=True,
@@ -306,7 +312,9 @@ class SequenceSimilarity:
                          '-out',
                          outfile.name,
                          '-outfmt',
-                         '6'],
+                         '6',
+                         '-num_threads',
+                         str(self.threads)],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         universal_newlines=True,

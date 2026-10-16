@@ -73,7 +73,8 @@ class Compile:
                 filtering.Immunogenicity(options.output_dir, "mhc-I", vartype)
 
                 # this overwrites the previous outfile (now including sequence similarity)
-                filtering.SequenceSimilarity(options.output_dir, "mhc-I", vartype)
+                filtering.SequenceSimilarity(options.output_dir, "mhc-I", vartype,
+                                             options.threads)
 
             
 
@@ -96,7 +97,8 @@ class Compile:
                 # filtering.Immunogenicity(options.output_dir, "mhc-II", vartype)
 
                 # this overwrites the previous outfile (now including sequence similarity)
-                filtering.SequenceSimilarity(options.output_dir, "mhc-II", vartype)
+                filtering.SequenceSimilarity(options.output_dir, "mhc-II", vartype,
+                                             options.threads)
                
                 
 
